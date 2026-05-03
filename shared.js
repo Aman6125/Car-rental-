@@ -1,3 +1,7 @@
+// ── API Base URL ───────────────────────────────────────────────────────────────
+// Change this ONE line when your server IP changes. Nothing else.
+const API_BASE = 'http://3.6.18.43:5000';
+
 // ── Car Data ──────────────────────────────────────────────────────────────────
 const CARS = [
   { id:1,  name:'BMW 5 Series',    brand:'BMW',        type:'Luxury',  price:28, rating:4.9, mileage:'18 km/l', seats:5, available:true,  img:'https://images.unsplash.com/photo-1555215695-3004980ad54e?w=600&q=80', color:'#1a1a2e' },
