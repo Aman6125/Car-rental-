@@ -5,7 +5,28 @@ const cors     = require('cors');
 
 const app = express();
 
-app.use(cors({ origin: '*', credentials: true }));
+const ALLOWED_ORIGINS = [
+  'http://3.6.18.43:5000',
+  'http://3.6.18.43',
+  'http://localhost:5000',
+  'http://localhost:3000',
+  'http://127.0.0.1:5000',
+];
+
+app.use(cors({
+  origin: function (origin, callback) {
+    // allow requests with no origin (mobile apps, curl, Postman)
+    if (!origin) return callback(null, true);
+    if (ALLOWED_ORIGINS.includes(origin)) return callback(null, true);
+    return callback(new Error('Not allowed by CORS'));
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+}));
+
+// Handle preflight for all routes
+app.options('*', cors());
 app.use(express.json());
 app.use(express.static(__dirname));
 
