@@ -333,6 +333,7 @@
   <!-- Populated by JS -->
 </div>
 
+<script src="config.js"></script>
 <script src="shared.js"></script>
 <script>
 function renderBooking() {
@@ -575,7 +576,7 @@ async function confirmPayment() {
   if (btn) { btn.disabled = true; btn.textContent = 'Processing...'; }
 
   try {
-    const res = await fetch('http://localhost:5000/booking/confirm', {
+    const res = await fetch(`${API_BASE}/booking/confirm`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
