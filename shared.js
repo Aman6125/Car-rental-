@@ -96,7 +96,7 @@ async function selectCar(car) {
     const distKm    = rideData.distanceKm || 10;
     const totalFare = calcFare(car.type, distKm);
 
-    const res = await fetch('http://localhost:5000/booking', {
+    const res = await fetch(`${API_BASE}/booking`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
