@@ -563,12 +563,13 @@
 
 </div><!-- /my-rides-page -->
 
+<script src="config.js"></script>
 <script src="shared.js"></script>
 <script>
 /* ═══════════════════════════════════════════════════════
    CONFIG
 ═══════════════════════════════════════════════════════ */
-const API_BASE = 'http://localhost:5000'; // ← change to your deployed URL if needed
+// API_BASE loaded from config.js
 
 /* ═══════════════════════════════════════════════════════
    AUTH HELPERS
@@ -1026,7 +1027,7 @@ async function cancelRide(id) {
   if (!token) { showToast('🔒 Please log in'); return; }
 
   try {
-    const res = await fetch(`http://localhost:5000/booking/cancel/${id}`, {
+    const res = await fetch(`${API_BASE}/booking/cancel/${id}`, {
       method: 'POST',
       headers: { Authorization: `Bearer ${token}` },
     });
