@@ -2,14 +2,14 @@ pipeline {
     agent any
 
     environment {
-        DOCKERHUB_USER   = 'YOUR_DOCKERHUB_USERNAME'
+        DOCKERHUB_USER   = 'amansingh009'
         IMAGE_NAME       = 'swiftride'
         IMAGE_TAG        = "${DOCKERHUB_USER}/${IMAGE_NAME}:${BUILD_NUMBER}"
         IMAGE_LATEST     = "${DOCKERHUB_USER}/${IMAGE_NAME}:latest"
         CONTAINER_NAME   = 'swiftride-app'
         APP_PORT         = '5000'
         EC2_USER         = 'ec2-user'
-        EC2_HOST         = 'YOUR_EC2_PUBLIC_IP'
+        EC2_HOST         = '13.206.187.123'
     }
 
     stages {
@@ -17,7 +17,7 @@ pipeline {
         stage('Clone') {
             steps {
                 git branch: 'main',
-                    url: 'https://github.com/YOUR_USERNAME/YOUR_REPO.git'
+                    url: 'https://github.com/Aman6125/Car-rental-.git'
                 echo "Code cloned — build #${BUILD_NUMBER}"
             }
         }
