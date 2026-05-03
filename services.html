@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SwiftRide — Services</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+.services-hero {
+  padding: 140px 40px 80px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.services-hero-bg {
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse 70% 50% at 50% 0%, rgba(99,102,241,0.15) 0%, transparent 70%);
+}
+
+.services-hero-grid {
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(rgba(99,102,241,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(99,102,241,0.04) 1px, transparent 1px);
+  background-size: 60px 60px;
+  mask-image: radial-gradient(ellipse 80% 60% at 50% 30%, black, transparent 80%);
+}
+
+.services-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 40px 80px;
+}
+
+/* Service cards */
+.services-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 24px;
+  margin-top: 60px;
+}
+
+.service-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  transition: var(--transition);
+}
+
+.service-card:hover {
+  transform: translateY(-6px);
+  border-color: rgba(99,102,241,0.3);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3), var(--shadow-accent);
+}
+
+.service-card-img {
+  width: 100%; height: 220px;
+  object-fit: cover;
+}
+
+.service-card-body { padding: 28px; }
+
+.service-icon {
+  width: 48px; height: 48px;
+  background: linear-gradient(135deg, rgba(99,102,241,0.2), rgba(34,211,238,0.1));
+  border: 1px solid rgba(99,102,241,0.25);
+  border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+  margin-bottom: 16px;
+}
+
+.service-name {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 800;
+  margin-bottom: 8px;
+  letter-spacing: -0.5px;
+}
+
+.service-desc {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.7;
+  margin-bottom: 20px;
+}
+
+.service-features {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.service-features li {
+  font-size: 13px;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.service-features li::before {
+  content: '✓';
+  color: var(--success);
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.service-price {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  margin-bottom: 16px;
+}
+
+.service-price-num {
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--accent);
+}
+
+.service-price-label { font-size: 13px; color: var(--text-muted); }
+
+/* Pricing table */
+.pricing-section {
+  margin-top: 80px;
+}
+
+.pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+  margin-top: 36px;
+}
+
+.pricing-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px 20px;
+  text-align: center;
+  transition: var(--transition);
+  position: relative;
+}
+
+.pricing-card.featured {
+  border-color: rgba(99,102,241,0.4);
+  background: rgba(99,102,241,0.05);
+}
+
+.pricing-card.featured::before {
+  content: 'Popular';
+  position: absolute;
+  top: -11px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--accent);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 12px;
+  border-radius: 20px;
+  letter-spacing: 0.5px;
+}
+
+.pricing-type-icon { font-size: 32px; margin-bottom: 12px; }
+.pricing-type-name { font-family: var(--font-display); font-size: 17px; font-weight: 700; margin-bottom: 4px; }
+.pricing-desc { font-size: 12px; color: var(--text-muted); margin-bottom: 16px; }
+.pricing-rate { font-family: var(--font-display); font-size: 26px; font-weight: 800; color: var(--accent); }
+.pricing-rate span { font-size: 13px; color: var(--text-muted); font-weight: 400; font-family: var(--font-body); }
+
+@media (max-width: 768px) {
+  .services-hero { padding: 110px 20px 60px; }
+  .services-container { padding: 0 20px 60px; }
+  .services-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="index.html" class="nav-logo">
+    <div class="nav-logo-icon">🚗</div>
+    <span class="nav-logo-text">Swift<span>Ride</span></span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="services.html" class="active">Services</a></li>
+    <li><a href="how-it-works.html">How It Works</a></li>
+    <li><a href="about.html">About</a></li>
+  </ul>
+  <div class="nav-actions">
+    <a href="auth.html" class="btn btn-ghost">Login</a>
+    <a href="auth.html" class="btn btn-primary">Get Started</a>
+  </div>
+  <button class="hamburger"><span></span><span></span><span></span></button>
+</nav>
+
+<div class="mobile-menu">
+  <a href="index.html">🏠 Home</a>
+  <a href="services.html">🚀 Services</a>
+  <a href="how-it-works.html">⚙️ How It Works</a>
+  <a href="about.html">ℹ️ About</a>
+  <a href="auth.html">👤 Login / Sign Up</a>
+</div>
+
+<!-- Hero -->
+<div class="services-hero">
+  <div class="services-hero-bg"></div>
+  <div class="services-hero-grid"></div>
+  <div style="position:relative;z-index:2" class="fade-in">
+    <div class="section-tag">🚀 What We Offer</div>
+    <h1 class="section-title" style="max-width:600px;margin:0 auto 16px">Services built for every journey</h1>
+    <p style="color:var(--text-secondary);font-size:16px;max-width:500px;margin:0 auto">From daily commutes to airport transfers and luxury corporate rides — we have it all.</p>
+  </div>
+</div>
+
+<!-- Services -->
+<div class="services-container">
+  <div class="services-grid">
+    <div class="service-card fade-in">
+      <img class="service-card-img" src="https://images.unsplash.com/photo-1609521263047-f8f205293f24?w=600&q=80" alt="Mini Ride">
+      <div class="service-card-body">
+        <div class="service-icon">🚗</div>
+        <div class="service-name">SwiftMini</div>
+        <p class="service-desc">Affordable city rides in compact cars. Perfect for solo travelers or quick errands around town.</p>
+        <ul class="service-features">
+          <li>Up to 4 passengers</li>
+          <li>AC & comfortable seating</li>
+          <li>GPS tracked every ride</li>
+          <li>Best for short city trips</li>
+        </ul>
+        <div class="service-price">
+          <span class="service-price-num">₹8</span>
+          <span class="service-price-label">/km starting</span>
+        </div>
+        <a href="index.html" class="btn btn-primary" style="width:100%;justify-content:center">Book Now</a>
+      </div>
+    </div>
+
+    <div class="service-card fade-in fade-in-d1">
+      <img class="service-card-img" src="https://images.unsplash.com/photo-1621007947382-bb3c3994e3fb?w=600&q=80" alt="Sedan">
+      <div class="service-card-body">
+        <div class="service-icon">🚙</div>
+        <div class="service-name">SwiftSedan</div>
+        <p class="service-desc">Premium sedans for comfortable city and intercity travel. More space, more comfort, same great price.</p>
+        <ul class="service-features">
+          <li>Up to 5 passengers</li>
+          <li>Premium interiors</li>
+          <li>Intercity capable</li>
+          <li>Verified professional drivers</li>
+        </ul>
+        <div class="service-price">
+          <span class="service-price-num">₹12</span>
+          <span class="service-price-label">/km starting</span>
+        </div>
+        <a href="index.html" class="btn btn-primary" style="width:100%;justify-content:center">Book Now</a>
+      </div>
+    </div>
+
+    <div class="service-card fade-in fade-in-d2">
+      <img class="service-card-img" src="https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?w=600&q=80" alt="SUV">
+      <div class="service-card-body">
+        <div class="service-icon">🚐</div>
+        <div class="service-name">SwiftSUV</div>
+        <p class="service-desc">Spacious SUVs for families and group travel. Luggage space, leg room, and the road presence you deserve.</p>
+        <ul class="service-features">
+          <li>Up to 7 passengers</li>
+          <li>Large luggage space</li>
+          <li>Highway & hill-station ready</li>
+          <li>Group booking discounts</li>
+        </ul>
+        <div class="service-price">
+          <span class="service-price-num">₹15</span>
+          <span class="service-price-label">/km starting</span>
+        </div>
+        <a href="index.html" class="btn btn-primary" style="width:100%;justify-content:center">Book Now</a>
+      </div>
+    </div>
+
+    <div class="service-card fade-in">
+      <img class="service-card-img" src="https://images.unsplash.com/photo-1555215695-3004980ad54e?w=600&q=80" alt="Luxury">
+      <div class="service-card-body">
+        <div class="service-icon">💎</div>
+        <div class="service-name">SwiftLux</div>
+        <p class="service-desc">BMW, Mercedes, Audi & Jaguar. For when you need to arrive in style — corporate meetings, weddings, events.</p>
+        <ul class="service-features">
+          <li>Top-tier luxury vehicles</li>
+          <li>Chauffeur in formal attire</li>
+          <li>Complimentary water & WiFi</li>
+          <li>Priority support 24/7</li>
+        </ul>
+        <div class="service-price">
+          <span class="service-price-num">₹28</span>
+          <span class="service-price-label">/km starting</span>
+        </div>
+        <a href="index.html" class="btn btn-primary" style="width:100%;justify-content:center">Book Now</a>
+      </div>
+    </div>
+
+    <div class="service-card fade-in fade-in-d1">
+      <img class="service-card-img" src="https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=600&q=80" alt="Airport">
+      <div class="service-card-body">
+        <div class="service-icon">✈️</div>
+        <div class="service-name">Airport Transfer</div>
+        <p class="service-desc">Punctual airport pickups and drops. Flight tracking, meet & greet, and no surge pricing — guaranteed.</p>
+        <ul class="service-features">
+          <li>Live flight tracking</li>
+          <li>Meet & greet at arrivals</li>
+          <li>No surge pricing ever</li>
+          <li>Free 60-min wait time</li>
+        </ul>
+        <div class="service-price">
+          <span class="service-price-num">₹999</span>
+          <span class="service-price-label">flat rate (city)</span>
+        </div>
+        <a href="index.html" class="btn btn-primary" style="width:100%;justify-content:center">Book Now</a>
+      </div>
+    </div>
+
+    <div class="service-card fade-in fade-in-d2">
+      <img class="service-card-img" src="https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=600&q=80" alt="Outstation">
+      <div class="service-card-body">
+        <div class="service-icon">🗺️</div>
+        <div class="service-name">Outstation Trips</div>
+        <p class="service-desc">Multi-day road trips across India with experienced long-haul drivers. Round trip or one-way available.</p>
+        <ul class="service-features">
+          <li>Pan-India coverage</li>
+          <li>Driver allowance included</li>
+          <li>Fuel surcharge transparent</li>
+          <li>Round trip discounts</li>
+        </ul>
+        <div class="service-price">
+          <span class="service-price-num">₹10</span>
+          <span class="service-price-label">/km (min 250km)</span>
+        </div>
+        <a href="index.html" class="btn btn-primary" style="width:100%;justify-content:center">Book Now</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pricing Table -->
+  <div class="pricing-section fade-in">
+    <div class="section-tag">💰 Pricing</div>
+    <h2 class="section-title">Simple, transparent rates</h2>
+    <p style="color:var(--text-secondary)">No hidden charges. What you see is what you pay.</p>
+    <div class="pricing-grid">
+      <div class="pricing-card">
+        <div class="pricing-type-icon">🚗</div>
+        <div class="pricing-type-name">Mini</div>
+        <div class="pricing-desc">Maruti Swift, i20</div>
+        <div class="pricing-rate">₹8<span>/km</span></div>
+      </div>
+      <div class="pricing-card featured">
+        <div class="pricing-type-icon">🚙</div>
+        <div class="pricing-type-name">Sedan</div>
+        <div class="pricing-desc">Honda City, Camry</div>
+        <div class="pricing-rate">₹12<span>/km</span></div>
+      </div>
+      <div class="pricing-card">
+        <div class="pricing-type-icon">🚐</div>
+        <div class="pricing-type-name">SUV</div>
+        <div class="pricing-desc">Creta, Fortuner</div>
+        <div class="pricing-rate">₹15<span>/km</span></div>
+      </div>
+      <div class="pricing-card">
+        <div class="pricing-type-icon">💎</div>
+        <div class="pricing-type-name">Luxury</div>
+        <div class="pricing-desc">BMW, Mercedes</div>
+        <div class="pricing-rate">₹28<span>/km</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer style="border-top:1px solid var(--border);padding:32px 40px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px">
+  <p style="font-size:13px;color:var(--text-muted)">© 2025 SwiftRide. All rights reserved.</p>
+  <div style="display:flex;gap:24px">
+    <a href="about.html" style="font-size:13px;color:var(--text-muted);text-decoration:none">About</a>
+    <a href="index.html" style="font-size:13px;color:var(--text-muted);text-decoration:none">Home</a>
+  </div>
+</footer>
+
+<script src="shared.js"></script>
+</body>
+</html>

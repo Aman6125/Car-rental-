@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SwiftRide — Your Booking</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+.booking-page {
+  padding: 100px 40px 60px;
+  max-width: 1100px;
+  margin: 0 auto;
+  min-height: 100vh;
+}
+
+.page-header {
+  margin-bottom: 40px;
+}
+
+.booking-grid {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 28px;
+  align-items: start;
+}
+
+/* Left - ride details */
+.booking-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.booking-card-header {
+  padding: 24px 28px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.booking-card-title {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.booking-card-body { padding: 28px; }
+
+/* Car detail */
+.car-detail-row {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+  padding-bottom: 28px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 28px;
+}
+
+.car-detail-img {
+  width: 180px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 12px;
+  flex-shrink: 0;
+  background: #1a1a2e;
+}
+
+.car-detail-info { flex: 1; }
+
+.car-detail-name {
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  margin-bottom: 4px;
+}
+
+.car-detail-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.meta-pill {
+  padding: 5px 12px;
+  background: rgba(99,102,241,0.1);
+  border: 1px solid rgba(99,102,241,0.2);
+  border-radius: 20px;
+  font-size: 12px;
+  color: #a5b4fc;
+  font-weight: 500;
+}
+
+/* Route section */
+.route-section { margin-bottom: 28px; }
+
+.route-section-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+}
+
+.route-display {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+}
+
+.route-point {
+  flex: 1;
+}
+
+.route-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin-bottom: 6px;
+}
+
+.route-value {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.route-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  font-size: 20px;
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+/* Trip info grid */
+.trip-info-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.trip-info-item {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  text-align: center;
+}
+
+.trip-info-icon { font-size: 22px; margin-bottom: 8px; }
+.trip-info-value { font-size: 14px; font-weight: 600; margin-bottom: 2px; }
+.trip-info-label { font-size: 11px; color: var(--text-muted); }
+
+/* Status Timeline */
+.status-timeline { display: flex; flex-direction: column; gap: 0; }
+.status-step {
+  display: flex;
+  gap: 16px;
+  position: relative;
+}
+.status-step:not(:last-child)::before {
+  content: '';
+  position: absolute;
+  left: 15px;
+  top: 36px;
+  bottom: 0;
+  width: 2px;
+  background: var(--border);
+}
+.step-dot {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  font-size: 14px;
+  background: var(--bg-secondary);
+  position: relative;
+  z-index: 1;
+}
+.step-dot.active { background: var(--accent); border-color: var(--accent); }
+.step-dot.done { background: var(--success); border-color: var(--success); }
+.step-body { padding-bottom: 24px; }
+.step-title { font-size: 14px; font-weight: 600; margin-bottom: 2px; }
+.step-desc { font-size: 12px; color: var(--text-muted); }
+
+/* Summary card */
+.summary-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  position: sticky;
+  top: 90px;
+}
+
+.summary-header {
+  padding: 22px 24px;
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(135deg, rgba(99,102,241,0.08), transparent);
+}
+
+.summary-title {
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.summary-body { padding: 24px; }
+
+.fare-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0;
+  font-size: 14px;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+
+.fare-row:last-child { border-bottom: none; }
+
+.fare-label { color: var(--text-secondary); }
+.fare-value { font-weight: 600; }
+
+.fare-total {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 0 0;
+  font-size: 18px;
+  border-top: 1px solid var(--border);
+  margin-top: 8px;
+}
+.fare-total .fare-label { color: var(--text-primary); font-weight: 700; font-family: var(--font-display); }
+.fare-total .fare-value { color: var(--accent); font-weight: 800; font-family: var(--font-display); font-size: 24px; }
+
+.payment-methods {
+  margin: 20px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.payment-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.payment-option:hover { border-color: var(--border-active); }
+.payment-option.selected { border-color: var(--accent); background: rgba(99,102,241,0.08); }
+.payment-option-icon { font-size: 20px; }
+.payment-option-label { font-size: 13px; font-weight: 500; flex: 1; }
+.payment-radio { width: 16px; height: 16px; accent-color: var(--accent); }
+
+.booking-id-box {
+  background: rgba(16,185,129,0.08);
+  border: 1px solid rgba(16,185,129,0.2);
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.booking-id-text { font-size: 13px; }
+.booking-id-num { font-family: var(--font-display); font-size: 15px; font-weight: 700; color: var(--success); letter-spacing: 1px; }
+
+/* No booking state */
+.no-booking {
+  text-align: center;
+  padding: 80px 40px;
+}
+.no-booking h2 { font-family: var(--font-display); font-size: 28px; font-weight: 800; margin-bottom: 12px; }
+.no-booking p { color: var(--text-secondary); margin-bottom: 28px; }
+
+@media (max-width: 900px) {
+  .booking-grid { grid-template-columns: 1fr; }
+  .trip-info-grid { grid-template-columns: repeat(2, 1fr); }
+  .summary-card { position: static; }
+}
+@media (max-width: 600px) {
+  .booking-page { padding: 90px 16px 40px; }
+  .car-detail-row { flex-direction: column; }
+  .car-detail-img { width: 100%; height: 180px; }
+}
+</style>
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="index.html" class="nav-logo">
+    <div class="nav-logo-icon">🚗</div>
+    <span class="nav-logo-text">Swift<span>Ride</span></span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="services.html">Services</a></li>
+    <li><a href="how-it-works.html">How It Works</a></li>
+    <li><a href="about.html">About</a></li>
+  </ul>
+  <div class="nav-actions" id="navActions">
+    <a href="auth.html" class="btn btn-ghost">My Account</a>
+    <a href="index.html" class="btn btn-primary">+ New Ride</a>
+  </div>
+  <button class="hamburger"><span></span><span></span><span></span></button>
+</nav>
+
+<div class="mobile-menu">
+  <a href="index.html">🏠 Home</a>
+  <a href="services.html">🚀 Services</a>
+  <a href="how-it-works.html">⚙️ How It Works</a>
+  <a href="about.html">ℹ️ About</a>
+  <a href="auth.html">👤 My Account</a>
+</div>
+
+<div class="booking-page" id="bookingContent">
+  <!-- Populated by JS -->
+</div>
+
+<script src="shared.js"></script>
+<script>
+function renderBooking() {
+  const selectedRide = JSON.parse(localStorage.getItem('selectedRide') || 'null');
+  const selectedCar  = JSON.parse(localStorage.getItem('selectedCar')  || 'null');
+  const rideData     = JSON.parse(localStorage.getItem('rideData')      || 'null');
+  const container    = document.getElementById('bookingContent');
+
+  if (!selectedRide && !selectedCar) {
+    container.innerHTML = `
+      <div class="no-booking">
+        <div style="font-size:64px;margin-bottom:20px">🚗</div>
+        <h2>No Booking Found</h2>
+        <p>You haven't selected a car or entered ride details yet.</p>
+        <a href="index.html" class="btn btn-primary btn-lg">Browse Cars</a>
+      </div>`;
+    return;
+  }
+
+  // Single source of truth — totalFare from the saved booking
+  const totalFare  = selectedRide?.totalFare || 0;
+  const distKm     = selectedRide?.distKm    || rideData?.distanceKm || '—';
+  const durationMin= rideData?.durationMin   || (distKm !== '—' ? Math.round(distKm * 2.5) : '—');
+  const bookingId  = selectedRide?._id       || ('SR' + Date.now().toString().slice(-6));
+
+  // Car details — prefer selectedCar object for image/meta, fall back to booking fields
+  const car = selectedCar || {};
+  const carName   = car.name    || (typeof selectedRide?.car === 'string' ? selectedRide.car : 'Car');
+  const carImg    = car.img     || 'https://images.unsplash.com/photo-1555215695-3004980ad54e?w=600&q=80';
+  const carBrand  = car.brand   || '';
+  const carType   = car.type    || '';
+  const carRating = car.rating  || '';
+  const carMileage= car.mileage || '';
+  const carSeats  = car.seats   || '';
+
+  // Route
+  const from = selectedRide?.from || rideData?.pickup || '—';
+  const to   = selectedRide?.to   || rideData?.drop   || '—';
+  const date = selectedRide?.date || rideData?.date   || '';
+  const time = selectedRide?.time || rideData?.time   || '—';
+
+  const dateFormatted = date
+    ? new Date(date).toLocaleDateString('en-IN', {weekday:'short', day:'numeric', month:'short', year:'numeric'})
+    : 'Today';
+
+  container.innerHTML = `
+  <div class="page-header fade-in">
+    <div class="section-tag">🎉 Booking Confirmed</div>
+    <h1 class="section-title">Your Ride is Confirmed!</h1>
+    <p style="color:var(--text-secondary)">Everything is set. Your driver will be at pickup on time.</p>
+  </div>
+  <div class="booking-grid">
+    <div>
+      <!-- Car & Route -->
+      <div class="booking-card fade-in fade-in-d1" style="margin-bottom:20px">
+        <div class="booking-card-header">
+          <span class="booking-card-title">Ride Details</span>
+          <span class="badge badge-available">● Confirmed</span>
+        </div>
+        <div class="booking-card-body">
+          <!-- Car -->
+          <div class="car-detail-row">
+            <img class="car-detail-img" src="${carImg}" alt="${carName}">
+            <div class="car-detail-info">
+              <div class="car-detail-name">${carName}</div>
+              <div style="color:var(--text-secondary);font-size:14px;margin-top:2px">${carBrand}${carType ? ' · ' + carType : ''}</div>
+              <div class="car-detail-meta">
+                ${carRating  ? `<span class="meta-pill">★ ${carRating}</span>` : ''}
+                ${carMileage ? `<span class="meta-pill">⟳ ${carMileage}</span>` : ''}
+                ${carSeats   ? `<span class="meta-pill">👥 ${carSeats} Seats</span>` : ''}
+              </div>
+            </div>
+          </div>
+          <!-- Route -->
+          <div class="route-section">
+            <div class="route-section-label">Your Route</div>
+            <div class="route-display">
+              <div class="route-point">
+                <div class="route-label">🔵 Pickup</div>
+                <div class="route-value">${from}</div>
+              </div>
+              <div class="route-arrow">→</div>
+              <div class="route-point">
+                <div class="route-label">🔴 Drop</div>
+                <div class="route-value">${to}</div>
+              </div>
+            </div>
+          </div>
+          <!-- Trip Info -->
+          <div class="trip-info-grid">
+            <div class="trip-info-item">
+              <div class="trip-info-icon">📅</div>
+              <div class="trip-info-value">${dateFormatted}</div>
+              <div class="trip-info-label">Date</div>
+            </div>
+            <div class="trip-info-item">
+              <div class="trip-info-icon">⏰</div>
+              <div class="trip-info-value">${time}</div>
+              <div class="trip-info-label">Pickup Time</div>
+            </div>
+            <div class="trip-info-item">
+              <div class="trip-info-icon">📍</div>
+              <div class="trip-info-value">${distKm !== '—' ? distKm + ' km' : '—'}</div>
+              <div class="trip-info-label">Est. Distance</div>
+            </div>
+            <div class="trip-info-item">
+              <div class="trip-info-icon">⏱️</div>
+              <div class="trip-info-value">${durationMin !== '—' ? durationMin + ' min' : '—'}</div>
+              <div class="trip-info-label">Est. Duration</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Status Timeline -->
+      <div class="booking-card fade-in fade-in-d2">
+        <div class="booking-card-header">
+          <span class="booking-card-title">Booking Status</span>
+        </div>
+        <div class="booking-card-body">
+          ${selectedRide?.driver?.name ? `
+          <div class="booking-id-box" style="margin-bottom:20px">
+            <span>🧑‍✈️</span>
+            <div>
+              <div class="booking-id-text" style="color:var(--text-muted);font-size:11px;letter-spacing:0.8px;text-transform:uppercase;margin-bottom:4px">Assigned Driver</div>
+              <div style="font-weight:700;font-size:15px">${selectedRide.driver.name}</div>
+              <div style="font-size:13px;color:var(--text-secondary);margin-top:2px">
+                📞 ${selectedRide.driver.phone} &nbsp;·&nbsp; 🚗 ${selectedRide.driver.vehicleNumber}
+              </div>
+            </div>
+          </div>` : ''}
+          <div class="status-timeline">
+            <div class="status-step">
+              <div class="step-dot done">✓</div>
+              <div class="step-body">
+                <div class="step-title">Booking Confirmed</div>
+                <div class="step-desc">Your booking has been received and confirmed</div>
+              </div>
+            </div>
+            <div class="status-step">
+              <div class="step-dot active">🚗</div>
+              <div class="step-body">
+                <div class="step-title">Driver Assigned</div>
+                <div class="step-desc">A verified driver is being assigned to your ride</div>
+              </div>
+            </div>
+            <div class="status-step">
+              <div class="step-dot">📍</div>
+              <div class="step-body">
+                <div class="step-title">Driver En Route</div>
+                <div class="step-desc">Driver heading to your pickup location</div>
+              </div>
+            </div>
+            <div class="status-step">
+              <div class="step-dot">🎯</div>
+              <div class="step-body">
+                <div class="step-title">Ride Completed</div>
+                <div class="step-desc">Safe arrival at your destination</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Summary — single source: totalFare from selectedRide -->
+    <div>
+      <div class="summary-card fade-in fade-in-d2">
+        <div class="summary-header">
+          <div class="summary-title">Fare Summary</div>
+        </div>
+        <div class="summary-body">
+          <div class="booking-id-box">
+            <span>🎫</span>
+            <div>
+              <div class="booking-id-text" style="color:var(--text-muted);font-size:11px;margin-bottom:2px">BOOKING ID</div>
+              <div class="booking-id-num">SR${String(bookingId).slice(-6).toUpperCase()}</div>
+            </div>
+          </div>
+          <div class="fare-row">
+            <span class="fare-label">Total Fare${distKm !== '—' ? ' (' + distKm + ' km)' : ''}</span>
+            <span class="fare-value">₹${totalFare.toLocaleString('en-IN')}</span>
+          </div>
+          <div class="fare-total">
+            <span class="fare-label">Amount to Pay</span>
+            <span class="fare-value">₹${totalFare.toLocaleString('en-IN')}</span>
+          </div>
+
+          <div style="font-size:11px;font-weight:600;color:var(--text-muted);letter-spacing:0.8px;text-transform:uppercase;margin:20px 0 10px">Payment Method</div>
+          <div class="payment-methods">
+            <div class="payment-option selected" onclick="selectPayment(this)">
+              <span class="payment-option-icon">💳</span>
+              <span class="payment-option-label">Credit / Debit Card</span>
+              <input type="radio" class="payment-radio" checked>
+            </div>
+            <div class="payment-option" onclick="selectPayment(this)">
+              <span class="payment-option-icon">📱</span>
+              <span class="payment-option-label">UPI / GPay</span>
+              <input type="radio" class="payment-radio">
+            </div>
+            <div class="payment-option" onclick="selectPayment(this)">
+              <span class="payment-option-icon">💵</span>
+              <span class="payment-option-label">Cash on Ride</span>
+              <input type="radio" class="payment-radio">
+            </div>
+          </div>
+
+          <button class="btn btn-primary btn-lg" style="width:100%;justify-content:center" onclick="confirmPayment()">
+            Confirm & Pay ₹${totalFare.toLocaleString('en-IN')}
+          </button>
+          <a href="index.html" class="btn btn-ghost" style="width:100%;justify-content:center;margin-top:10px">
+            ← Change Car
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function selectPayment(el) {
+  document.querySelectorAll('.payment-option').forEach(o => {
+    o.classList.remove('selected');
+    o.querySelector('.payment-radio').checked = false;
+  });
+  el.classList.add('selected');
+  el.querySelector('.payment-radio').checked = true;
+}
+
+async function confirmPayment() {
+  const token = localStorage.getItem('sr_token');
+  const selectedRide = JSON.parse(localStorage.getItem('selectedRide') || 'null');
+  const bookingId = selectedRide?._id;
+
+  // Resolve selected payment method label
+  const selectedOption = document.querySelector('.payment-option.selected .payment-option-label');
+  const paymentMethod  = selectedOption ? selectedOption.textContent.trim() : 'card';
+
+  // Disable button to prevent double-submit
+  const btn = document.querySelector('.btn.btn-primary.btn-lg[onclick="confirmPayment()"]');
+  if (btn) { btn.disabled = true; btn.textContent = 'Processing...'; }
+
+  try {
+    const res = await fetch('http://localhost:5000/booking/confirm', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({ bookingId, paymentMethod }),
+    });
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Payment failed');
+
+    // Clear local state
+    localStorage.removeItem('selectedCar');
+    localStorage.removeItem('selectedRide');
+    localStorage.removeItem('rideData');
+
+    showToast('🎉 Payment successful! Enjoy your ride!');
+    setTimeout(() => { window.location.href = 'my-rides.html'; }, 1500);
+
+  } catch (err) {
+    showToast('❌ ' + err.message);
+    if (btn) { btn.disabled = false; btn.textContent = btn.dataset.label || 'Confirm & Pay'; }
+  }
+}
+
+renderBooking();
+</script>
+</body>
+</html>

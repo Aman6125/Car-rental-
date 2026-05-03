@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SwiftRide — How It Works</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+.hiw-hero {
+  padding: 140px 40px 80px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.hiw-bg {
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse 60% 50% at 50% 0%, rgba(34,211,238,0.1) 0%, transparent 70%);
+}
+
+.hiw-container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 40px 80px;
+}
+
+/* Steps */
+.steps-section { margin-bottom: 80px; }
+
+.steps-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-top: 48px;
+  position: relative;
+}
+
+.steps-list::before {
+  content: '';
+  position: absolute;
+  left: 35px;
+  top: 40px;
+  bottom: 40px;
+  width: 2px;
+  background: linear-gradient(to bottom, var(--accent), transparent);
+}
+
+.step-row {
+  display: flex;
+  gap: 32px;
+  align-items: flex-start;
+  padding-bottom: 52px;
+}
+
+.step-num-wrap {
+  position: relative;
+  z-index: 1;
+  flex-shrink: 0;
+}
+
+.step-num {
+  width: 72px; height: 72px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), #818cf8);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 800;
+  color: #fff;
+  box-shadow: 0 8px 30px rgba(99,102,241,0.4);
+}
+
+.step-content { padding-top: 14px; flex: 1; }
+
+.step-tag {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--accent);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.step-title {
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  margin-bottom: 10px;
+}
+
+.step-desc {
+  font-size: 15px;
+  color: var(--text-secondary);
+  line-height: 1.7;
+  max-width: 550px;
+}
+
+.step-img {
+  width: 280px;
+  height: 180px;
+  object-fit: cover;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+/* FAQ */
+.faq-section { margin-top: 80px; }
+
+.faq-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 36px;
+}
+
+.faq-item {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+
+.faq-item.open { border-color: rgba(99,102,241,0.3); }
+
+.faq-q {
+  width: 100%;
+  padding: 20px 24px;
+  background: none;
+  border: none;
+  text-align: left;
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.faq-arrow {
+  font-size: 18px;
+  color: var(--text-muted);
+  transition: transform 0.3s;
+  flex-shrink: 0;
+}
+.faq-item.open .faq-arrow { transform: rotate(180deg); color: var(--accent); }
+
+.faq-a {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.35s ease;
+  padding: 0 24px;
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.faq-item.open .faq-a {
+  max-height: 300px;
+  padding: 0 24px 20px;
+}
+
+/* App download */
+.app-section {
+  background: linear-gradient(135deg, rgba(99,102,241,0.12), rgba(34,211,238,0.06));
+  border: 1px solid rgba(99,102,241,0.2);
+  border-radius: var(--radius-lg);
+  padding: 60px;
+  margin-top: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 40px;
+  flex-wrap: wrap;
+}
+
+.app-text h2 { font-family: var(--font-display); font-size: 34px; font-weight: 800; letter-spacing: -1px; margin-bottom: 10px; }
+.app-text p { color: var(--text-secondary); font-size: 15px; max-width: 420px; }
+
+.app-btns { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 24px; }
+
+.app-store-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 22px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 12px;
+  text-decoration: none;
+  color: var(--text-primary);
+  transition: var(--transition);
+}
+
+.app-store-btn:hover { background: rgba(255,255,255,0.1); border-color: var(--border-active); }
+.app-store-icon { font-size: 28px; }
+.app-store-label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+.app-store-name { font-family: var(--font-display); font-size: 16px; font-weight: 700; }
+
+.app-phones {
+  font-size: 80px;
+  line-height: 1;
+}
+
+@media (max-width: 900px) {
+  .step-img { display: none; }
+  .steps-list::before { left: 35px; }
+}
+@media (max-width: 768px) {
+  .hiw-hero { padding: 110px 20px 60px; }
+  .hiw-container { padding: 0 20px 60px; }
+  .app-section { padding: 36px 24px; }
+}
+</style>
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="index.html" class="nav-logo">
+    <div class="nav-logo-icon">🚗</div>
+    <span class="nav-logo-text">Swift<span>Ride</span></span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="services.html">Services</a></li>
+    <li><a href="how-it-works.html" class="active">How It Works</a></li>
+    <li><a href="about.html">About</a></li>
+  </ul>
+  <div class="nav-actions">
+    <a href="auth.html" class="btn btn-ghost">Login</a>
+    <a href="auth.html" class="btn btn-primary">Get Started</a>
+  </div>
+  <button class="hamburger"><span></span><span></span><span></span></button>
+</nav>
+
+<div class="mobile-menu">
+  <a href="index.html">🏠 Home</a>
+  <a href="services.html">🚀 Services</a>
+  <a href="how-it-works.html">⚙️ How It Works</a>
+  <a href="about.html">ℹ️ About</a>
+  <a href="auth.html">👤 Login / Sign Up</a>
+</div>
+
+<div class="hiw-hero">
+  <div class="hiw-bg"></div>
+  <div style="position:relative;z-index:2" class="fade-in">
+    <div class="section-tag">⚙️ Process</div>
+    <h1 class="section-title" style="max-width:600px;margin:0 auto 16px">Ride in 4 simple steps</h1>
+    <p style="color:var(--text-secondary);font-size:16px">From browsing to boarding — the whole journey takes under 2 minutes.</p>
+  </div>
+</div>
+
+<div class="hiw-container">
+  <!-- Steps -->
+  <div class="steps-section">
+    <div class="steps-list">
+      <div class="step-row fade-in">
+        <div class="step-num-wrap">
+          <div class="step-num">01</div>
+        </div>
+        <div class="step-content">
+          <div class="step-tag">Step One</div>
+          <div class="step-title">Enter your pickup & drop</div>
+          <p class="step-desc">Type in your starting point and destination. Our smart location search auto-suggests addresses across India in real-time.</p>
+        </div>
+        <img class="step-img" src="https://images.unsplash.com/photo-1512428813834-c702c7702b78?w=400&q=80" alt="">
+      </div>
+
+      <div class="step-row fade-in fade-in-d1">
+        <div class="step-num-wrap">
+          <div class="step-num">02</div>
+        </div>
+        <div class="step-content">
+          <div class="step-tag">Step Two</div>
+          <div class="step-title">Choose your car type</div>
+          <p class="step-desc">Select from Mini, Sedan, SUV, or Luxury. Browse our full fleet with transparent per-km pricing, ratings, and availability status.</p>
+        </div>
+        <img class="step-img" src="https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=400&q=80" alt="">
+      </div>
+
+      <div class="step-row fade-in fade-in-d2">
+        <div class="step-num-wrap">
+          <div class="step-num">03</div>
+        </div>
+        <div class="step-content">
+          <div class="step-tag">Step Three</div>
+          <div class="step-title">Confirm & pay securely</div>
+          <p class="step-desc">Review your estimated fare, select payment method (UPI, card, or cash), and confirm your booking. You'll receive an instant confirmation with booking ID.</p>
+        </div>
+        <img class="step-img" src="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=400&q=80" alt="">
+      </div>
+
+      <div class="step-row fade-in fade-in-d3">
+        <div class="step-num-wrap">
+          <div class="step-num">04</div>
+        </div>
+        <div class="step-content">
+          <div class="step-tag">Step Four</div>
+          <div class="step-title">Enjoy your ride!</div>
+          <p class="step-desc">Your verified driver arrives at the scheduled time. Track your ride live, rate your experience, and earn loyalty points for your next journey.</p>
+        </div>
+        <img class="step-img" src="https://images.unsplash.com/photo-1471498902724-5e0e37c34b4e?w=400&q=80" alt="">
+      </div>
+    </div>
+  </div>
+
+  <!-- FAQ -->
+  <div class="faq-section fade-in">
+    <div class="section-tag">❓ FAQ</div>
+    <h2 class="section-title">Frequently asked questions</h2>
+    <div class="faq-list">
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          How do I track my driver in real-time?
+          <span class="faq-arrow">▾</span>
+        </button>
+        <div class="faq-a">Once your driver is assigned, the SwiftRide app shows their live location on a map. You'll also receive their name, photo, vehicle number, and a direct call button so you can coordinate easily.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          Can I cancel a booking?
+          <span class="faq-arrow">▾</span>
+        </button>
+        <div class="faq-a">Yes. You can cancel for free up to 30 minutes before your scheduled ride. Cancellations within 30 minutes may incur a small fee of ₹50–₹100 depending on the car type and driver proximity.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          Are all drivers background verified?
+          <span class="faq-arrow">▾</span>
+        </button>
+        <div class="faq-a">Absolutely. Every SwiftRide driver goes through a multi-step verification: government ID check, police clearance, driving license validation, vehicle inspection, and a test ride. Safety is our top priority.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          Is there surge pricing during peak hours?
+          <span class="faq-arrow">▾</span>
+        </button>
+        <div class="faq-a">SwiftRide follows a no-surge policy for pre-booked rides. If you schedule your ride in advance, you always pay the displayed fare — no surprises. Instant bookings may have small demand adjustments, which are clearly shown before you confirm.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          What payment methods are accepted?
+          <span class="faq-arrow">▾</span>
+        </button>
+        <div class="faq-a">We accept all major credit and debit cards, UPI (Google Pay, PhonePe, Paytm), net banking, and cash. You can also save your preferred payment method for one-tap checkout on future rides.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          How do loyalty points work?
+          <span class="faq-arrow">▾</span>
+        </button>
+        <div class="faq-a">You earn 1 SwiftPoint for every ₹10 spent. Points can be redeemed as ride credits (100 points = ₹10). Elite members (500+ points/month) get priority matching, bonus points, and exclusive discounts on luxury rides.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- App Section -->
+  <div class="app-section fade-in">
+    <div class="app-text">
+      <h2>Ride smarter with the app</h2>
+      <p>Real-time tracking, instant bookings, and exclusive app-only deals — all in your pocket.</p>
+      <div class="app-btns">
+        <a href="#" class="app-store-btn">
+          <span class="app-store-icon">🍎</span>
+          <div>
+            <div class="app-store-label">Download on the</div>
+            <div class="app-store-name">App Store</div>
+          </div>
+        </a>
+        <a href="#" class="app-store-btn">
+          <span class="app-store-icon">▶️</span>
+          <div>
+            <div class="app-store-label">Get it on</div>
+            <div class="app-store-name">Google Play</div>
+          </div>
+        </a>
+      </div>
+    </div>
+    <div class="app-phones">📱🚗</div>
+  </div>
+</div>
+
+<footer style="border-top:1px solid var(--border);padding:32px 40px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px">
+  <p style="font-size:13px;color:var(--text-muted)">© 2025 SwiftRide. All rights reserved.</p>
+  <div style="display:flex;gap:24px">
+    <a href="about.html" style="font-size:13px;color:var(--text-muted);text-decoration:none">About</a>
+    <a href="services.html" style="font-size:13px;color:var(--text-muted);text-decoration:none">Services</a>
+  </div>
+</footer>
+
+<script src="shared.js"></script>
+<script>
+function toggleFaq(btn) {
+  const item = btn.parentElement;
+  const isOpen = item.classList.contains('open');
+  document.querySelectorAll('.faq-item.open').forEach(i => i.classList.remove('open'));
+  if (!isOpen) item.classList.add('open');
+}
+</script>
+</body>
+</html>

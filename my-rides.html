@@ -1,0 +1,1106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SwiftRide — My Rides</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+/* ─────────────────────────────────────────────
+   PAGE LAYOUT  (mirrors booking-page pattern)
+───────────────────────────────────────────── */
+.my-rides-page {
+  padding: 100px 40px 100px;
+  max-width: 1100px;
+  margin: 0 auto;
+  min-height: 100vh;
+}
+
+.page-header { margin-bottom: 36px; }
+
+/* ─────────────────────────────────────────────
+   TOP STATS ROW  (same spec-item pattern)
+───────────────────────────────────────────── */
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 36px;
+}
+
+.stat-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 22px 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  transition: var(--transition);
+}
+
+.stat-card:hover {
+  border-color: var(--border-active);
+  transform: translateY(-2px);
+}
+
+.stat-icon {
+  font-size: 28px;
+  flex-shrink: 0;
+}
+
+.stat-num {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1;
+}
+
+.stat-label {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 3px;
+}
+
+/* ─────────────────────────────────────────────
+   FILTER TABS  (same as index.html pattern)
+───────────────────────────────────────────── */
+.rides-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-bottom: 24px;
+}
+
+.filter-tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.filter-tab {
+  padding: 7px 18px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition);
+  font-family: var(--font-body);
+}
+
+.filter-tab:hover { border-color: var(--border-active); color: var(--text-primary); }
+
+.filter-tab.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.rides-count {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+/* ─────────────────────────────────────────────
+   RIDE CARD  (built on booking-card structure)
+───────────────────────────────────────────── */
+.rides-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* reuse booking-card but adapt for list */
+.ride-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.ride-card:hover {
+  border-color: rgba(99,102,241,0.25);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+}
+
+/* collapsed header row */
+.ride-card-header {
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.ride-car-thumb {
+  width: 80px;
+  height: 56px;
+  object-fit: cover;
+  border-radius: 10px;
+  flex-shrink: 0;
+  background: #1a1a2e;
+}
+
+.ride-header-info { flex: 1; min-width: 0; }
+
+.ride-car-name {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ride-route-short {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-top: 3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ride-header-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.ride-fare {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--accent);
+}
+
+.ride-date-label {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.ride-chevron {
+  font-size: 14px;
+  color: var(--text-muted);
+  transition: transform 0.3s ease;
+  flex-shrink: 0;
+}
+
+.ride-card.expanded .ride-chevron { transform: rotate(180deg); }
+
+/* expanded body — hidden by default */
+.ride-card-body {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.ride-card.expanded .ride-card-body { max-height: 700px; }
+
+.ride-card-body-inner {
+  padding: 0 24px 24px;
+  border-top: 1px solid var(--border);
+}
+
+/* ─────────────────────────────────────────────
+   ROUTE  (identical to booking.html)
+───────────────────────────────────────────── */
+.route-section { margin: 20px 0; }
+
+.route-section-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+}
+
+.route-display { display: flex; align-items: stretch; }
+
+.route-point { flex: 1; }
+
+.route-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin-bottom: 5px;
+}
+
+.route-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.route-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  font-size: 18px;
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+/* ─────────────────────────────────────────────
+   TRIP INFO GRID  (identical to booking.html)
+───────────────────────────────────────────── */
+.trip-info-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.trip-info-item {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px;
+  text-align: center;
+}
+
+.trip-info-icon { font-size: 18px; margin-bottom: 6px; }
+.trip-info-value { font-size: 13px; font-weight: 600; margin-bottom: 2px; }
+.trip-info-label { font-size: 10px; color: var(--text-muted); }
+
+/* ─────────────────────────────────────────────
+   STATUS BADGE VARIANTS
+───────────────────────────────────────────── */
+.badge-pending {
+  background: rgba(245,158,11,0.15);
+  color: var(--warning);
+  border: 1px solid rgba(245,158,11,0.3);
+}
+
+/* badge-available = confirmed, badge-booked = rejected (already in shared.css) */
+
+/* ─────────────────────────────────────────────
+   BOOKING ID BOX  (identical to booking.html)
+───────────────────────────────────────────── */
+.booking-id-box {
+  background: rgba(16,185,129,0.08);
+  border: 1px solid rgba(16,185,129,0.2);
+  border-radius: 10px;
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.booking-id-num {
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--success);
+  letter-spacing: 1px;
+}
+
+/* ─────────────────────────────────────────────
+   RATING WIDGET  (new, matches design lang)
+───────────────────────────────────────────── */
+.rating-section {
+  background: rgba(99,102,241,0.05);
+  border: 1px solid rgba(99,102,241,0.15);
+  border-radius: var(--radius-sm);
+  padding: 16px;
+  margin-top: 4px;
+}
+
+.rating-section-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 12px;
+}
+
+.star-picker {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.star-btn {
+  font-size: 24px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-muted);
+  transition: color 0.15s ease, transform 0.15s ease;
+  line-height: 1;
+  padding: 2px;
+}
+
+.star-btn:hover,
+.star-btn.active { color: var(--warning); transform: scale(1.2); }
+
+.rating-submitted {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.rating-submitted .stars-display { color: var(--warning); font-size: 16px; letter-spacing: 2px; }
+
+/* ─────────────────────────────────────────────
+   EMPTY STATE  (mirrors booking.html no-booking)
+───────────────────────────────────────────── */
+.empty-state {
+  text-align: center;
+  padding: 80px 40px;
+}
+
+.empty-state-icon { font-size: 64px; margin-bottom: 20px; }
+
+.empty-state h2 {
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 800;
+  margin-bottom: 10px;
+  letter-spacing: -0.5px;
+}
+
+.empty-state p {
+  color: var(--text-secondary);
+  font-size: 15px;
+  margin-bottom: 28px;
+}
+
+/* ─────────────────────────────────────────────
+   SKELETON LOADER
+───────────────────────────────────────────── */
+.skeleton {
+  background: linear-gradient(90deg,
+    rgba(255,255,255,0.04) 25%,
+    rgba(255,255,255,0.08) 50%,
+    rgba(255,255,255,0.04) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 8px;
+}
+
+.skel-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.skel-thumb { width: 80px; height: 56px; border-radius: 10px; flex-shrink: 0; }
+.skel-line { height: 14px; margin-bottom: 8px; }
+.skel-line-sm { height: 10px; width: 60%; }
+
+/* ─────────────────────────────────────────────
+   BOTTOM NAV BAR  (mobile app style)
+───────────────────────────────────────────── */
+.bottom-nav {
+  display: none;
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  height: 64px;
+  background: rgba(10,10,15,0.95);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-top: 1px solid var(--border);
+  z-index: 998;
+  padding: 0 8px;
+  align-items: center;
+  justify-content: space-around;
+}
+
+.bottom-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  text-decoration: none;
+  padding: 8px 16px;
+  border-radius: 12px;
+  transition: var(--transition);
+  color: var(--text-muted);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+
+.bottom-nav-item:hover,
+.bottom-nav-item.active {
+  color: var(--accent);
+  background: rgba(99,102,241,0.08);
+}
+
+.bottom-nav-icon { font-size: 22px; line-height: 1; }
+
+/* ─────────────────────────────────────────────
+   RESPONSIVE
+───────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .stats-row { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 768px) {
+  .my-rides-page { padding: 90px 16px 88px; }
+  .trip-info-grid { grid-template-columns: repeat(2, 1fr); }
+  .bottom-nav { display: flex; }
+  .ride-car-thumb { width: 60px; height: 44px; }
+}
+
+@media (max-width: 480px) {
+  .stats-row { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .stat-card { padding: 16px 14px; gap: 12px; }
+  .rides-toolbar { flex-direction: column; align-items: flex-start; }
+}
+</style>
+</head>
+<body>
+
+<!-- ── Navbar ── -->
+<nav class="navbar">
+  <a href="index.html" class="nav-logo">
+    <div class="nav-logo-icon">🚗</div>
+    <span class="nav-logo-text">Swift<span>Ride</span></span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="services.html">Services</a></li>
+    <li><a href="how-it-works.html">How It Works</a></li>
+    <li><a href="about.html">About</a></li>
+  </ul>
+  <div class="nav-actions">
+    <a href="my-rides.html" class="btn btn-ghost" id="userGreeting">My Rides</a>
+    <a href="index.html" class="btn btn-primary">+ New Ride</a>
+  </div>
+  <button class="hamburger" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<!-- Mobile Menu -->
+<div class="mobile-menu">
+  <a href="index.html">🏠 Home</a>
+  <a href="services.html">🚀 Services</a>
+  <a href="how-it-works.html">⚙️ How It Works</a>
+  <a href="about.html">ℹ️ About</a>
+  <a href="my-rides.html">🎫 My Rides</a>
+  <a href="auth.html">👤 Account</a>
+</div>
+
+<!-- ── Bottom Nav (mobile) ── -->
+<nav class="bottom-nav">
+  <a href="index.html" class="bottom-nav-item">
+    <span class="bottom-nav-icon">🏠</span>Home
+  </a>
+  <a href="services.html" class="bottom-nav-item">
+    <span class="bottom-nav-icon">🚀</span>Rides
+  </a>
+  <a href="my-rides.html" class="bottom-nav-item active">
+    <span class="bottom-nav-icon">🎫</span>My Rides
+  </a>
+  <a href="auth.html" class="bottom-nav-item">
+    <span class="bottom-nav-icon">👤</span>Account
+  </a>
+</nav>
+
+<!-- ── Page ── -->
+<div class="my-rides-page">
+
+  <!-- Header -->
+  <div class="page-header fade-in">
+    <div class="section-tag">🎫 Dashboard</div>
+    <h1 class="section-title">My Rides</h1>
+    <p style="color:var(--text-secondary)">Track all your bookings, fares, and ride history in one place.</p>
+  </div>
+
+  <!-- Stats row -->
+  <div class="stats-row fade-in fade-in-d1" id="statsRow">
+    <!-- skeleton while loading -->
+    <div class="stat-card"><div class="stat-icon skeleton" style="width:36px;height:36px;border-radius:8px"></div><div><div class="skeleton skel-line" style="width:60px"></div><div class="skeleton skel-line-sm" style="margin-top:6px"></div></div></div>
+    <div class="stat-card"><div class="stat-icon skeleton" style="width:36px;height:36px;border-radius:8px"></div><div><div class="skeleton skel-line" style="width:60px"></div><div class="skeleton skel-line-sm" style="margin-top:6px"></div></div></div>
+    <div class="stat-card"><div class="stat-icon skeleton" style="width:36px;height:36px;border-radius:8px"></div><div><div class="skeleton skel-line" style="width:60px"></div><div class="skeleton skel-line-sm" style="margin-top:6px"></div></div></div>
+    <div class="stat-card"><div class="stat-icon skeleton" style="width:36px;height:36px;border-radius:8px"></div><div><div class="skeleton skel-line" style="width:60px"></div><div class="skeleton skel-line-sm" style="margin-top:6px"></div></div></div>
+  </div>
+
+  <!-- Toolbar -->
+  <div class="rides-toolbar fade-in fade-in-d2">
+    <div class="filter-tabs" id="filterTabs">
+      <button class="filter-tab active" data-filter="all">All</button>
+      <button class="filter-tab" data-filter="pending">Pending</button>
+      <button class="filter-tab" data-filter="confirmed">Confirmed</button>
+      <button class="filter-tab" data-filter="completed">Completed</button>
+      <button class="filter-tab" data-filter="rejected">Rejected</button>
+      <button class="filter-tab" data-filter="cancelled">Cancelled</button>
+    </div>
+    <span class="rides-count" id="ridesCount"></span>
+  </div>
+
+  <!-- Rides list -->
+  <div class="rides-list fade-in fade-in-d3" id="ridesList">
+    <!-- skeleton cards -->
+    <div class="skel-card"><div class="skeleton skel-thumb"></div><div style="flex:1"><div class="skeleton skel-line" style="width:55%"></div><div class="skeleton skel-line-sm"></div></div></div>
+    <div class="skel-card"><div class="skeleton skel-thumb"></div><div style="flex:1"><div class="skeleton skel-line" style="width:40%"></div><div class="skeleton skel-line-sm"></div></div></div>
+    <div class="skel-card"><div class="skeleton skel-thumb"></div><div style="flex:1"><div class="skeleton skel-line" style="width:65%"></div><div class="skeleton skel-line-sm"></div></div></div>
+  </div>
+
+</div><!-- /my-rides-page -->
+
+<script src="shared.js"></script>
+<script>
+/* ═══════════════════════════════════════════════════════
+   CONFIG
+═══════════════════════════════════════════════════════ */
+const API_BASE = 'http://localhost:5000'; // ← change to your deployed URL if needed
+
+/* ═══════════════════════════════════════════════════════
+   AUTH HELPERS
+═══════════════════════════════════════════════════════ */
+function getToken() {
+  return localStorage.getItem('sr_token') || null;
+}
+
+function getUserEmail() {
+  try {
+    const payload = getToken().split('.')[1];
+    return JSON.parse(atob(payload)).email || 'Rider';
+  } catch {
+    return 'Rider';
+  }
+}
+
+/* Redirect to login if no token */
+function requireAuth() {
+  if (!getToken()) {
+    showToast('🔒 Please log in to view your rides', 4000);
+    setTimeout(() => { window.location.href = 'auth.html'; }, 1200);
+    return false;
+  }
+  return true;
+}
+
+/* ═══════════════════════════════════════════════════════
+   FETCH MY BOOKINGS  →  GET /booking/my-bookings
+═══════════════════════════════════════════════════════ */
+async function fetchMyBookings() {
+  const token = getToken();
+  const res = await fetch(`${API_BASE}/booking/my-bookings`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const data = await res.json();
+  // API may return { bookings: [...] } or bare array
+  return Array.isArray(data) ? data : (data.bookings || []);
+}
+
+/* ═══════════════════════════════════════════════════════
+   RATING  →  stored in localStorage (keyed by booking id)
+   Change to POST /booking/rate/:id when backend is ready
+═══════════════════════════════════════════════════════ */
+function getSavedRating(id) {
+  const all = JSON.parse(localStorage.getItem('sr_ratings') || '{}');
+  return all[id] || 0;
+}
+
+function saveRating(id, stars) {
+  const all = JSON.parse(localStorage.getItem('sr_ratings') || '{}');
+  all[id] = stars;
+  localStorage.setItem('sr_ratings', JSON.stringify(all));
+}
+
+/* ── Optional: POST rating to backend when you wire it up
+async function postRating(bookingId, stars) {
+  await fetch(`${API_BASE}/booking/rate/${bookingId}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${getToken()}`
+    },
+    body: JSON.stringify({ stars })
+  });
+}
+── */
+
+/* ═══════════════════════════════════════════════════════
+   STATUS HELPERS
+═══════════════════════════════════════════════════════ */
+const STATUS_META = {
+  pending:   { label: '⏳ Pending',   cls: 'badge-pending',   icon: '⏳' },
+  confirmed: { label: '✓ Confirmed',  cls: 'badge-available', icon: '✓'  },
+  completed: { label: '🏁 Completed', cls: 'badge-available', icon: '🏁' },
+  rejected:  { label: '✕ Rejected',  cls: 'badge-booked',    icon: '✕'  },
+  cancelled: { label: '✕ Cancelled', cls: 'badge-booked',    icon: '✕'  },
+};
+
+function statusBadge(status) {
+  const s = STATUS_META[status] || STATUS_META.pending;
+  return `<span class="badge ${s.cls}">${s.label}</span>`;
+}
+
+/* ═══════════════════════════════════════════════════════
+   FORMAT HELPERS
+═══════════════════════════════════════════════════════ */
+function fmtDate(dateStr) {
+  if (!dateStr) return '—';
+  return new Date(dateStr).toLocaleDateString('en-IN', {
+    day: 'numeric', month: 'short', year: 'numeric'
+  });
+}
+
+function fmtTime(dateStr) {
+  if (!dateStr) return '—';
+  return new Date(dateStr).toLocaleTimeString('en-IN', {
+    hour: '2-digit', minute: '2-digit'
+  });
+}
+
+/* ═══════════════════════════════════════════════════════
+   STAT CARDS
+═══════════════════════════════════════════════════════ */
+function renderStats(bookings) {
+  const total     = bookings.length;
+  const confirmed = bookings.filter(b => b.status === 'confirmed' || b.status === 'completed').length;
+  const spent     = bookings
+    .filter(b => b.status === 'confirmed' || b.status === 'completed')
+    .reduce((s, b) => s + (b.totalFare || b.fare || 0), 0);
+  const pending   = bookings.filter(b => b.status === 'pending').length;
+
+  document.getElementById('statsRow').innerHTML = `
+    <div class="stat-card fade-in">
+      <span class="stat-icon">🎫</span>
+      <div>
+        <div class="stat-num">${total}</div>
+        <div class="stat-label">Total Rides</div>
+      </div>
+    </div>
+    <div class="stat-card fade-in fade-in-d1">
+      <span class="stat-icon">✅</span>
+      <div>
+        <div class="stat-num">${confirmed}</div>
+        <div class="stat-label">Completed</div>
+      </div>
+    </div>
+    <div class="stat-card fade-in fade-in-d2">
+      <span class="stat-icon">⏳</span>
+      <div>
+        <div class="stat-num">${pending}</div>
+        <div class="stat-label">Pending</div>
+      </div>
+    </div>
+    <div class="stat-card fade-in fade-in-d3">
+      <span class="stat-icon">💸</span>
+      <div>
+        <div class="stat-num">₹${spent.toLocaleString('en-IN')}</div>
+        <div class="stat-label">Total Spent</div>
+      </div>
+    </div>`;
+}
+
+/* ═══════════════════════════════════════════════════════
+   SINGLE RIDE CARD
+═══════════════════════════════════════════════════════ */
+function rideCardHTML(booking, idx) {
+  const car      = (typeof booking.car === 'object' && booking.car) ? booking.car : {};
+  const carImg   = car.img || 'https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=300&q=60';
+  const carName  = car.name || (typeof booking.car === 'string' ? booking.car : 'Car');
+  const carBrand = car.brand || '';
+  const carType  = car.type  || '';
+
+  const from   = booking.from || booking.pickup || '—';
+  const to     = booking.to   || booking.drop   || '—';
+  const fare    = booking.totalFare || booking.fare || 0;
+  const status = (booking.status || 'pending').toLowerCase();
+  const bid    = booking._id || booking.id || ('SR' + idx);
+  const bidShort = String(bid).slice(-6).toUpperCase();
+
+  const distKm  = booking.distanceKm || '—';
+  const date    = fmtDate(booking.createdAt || booking.date);
+  const time    = fmtTime(booking.createdAt || booking.date);
+
+  const savedRating  = getSavedRating(bid);
+  const isCompleted  = status === 'completed';
+  const isRated      = savedRating > 0;
+
+  /* rating section HTML */
+  let ratingHTML = '';
+  if (isCompleted) {
+    if (isRated) {
+      const stars = '★'.repeat(savedRating) + '☆'.repeat(5 - savedRating);
+      ratingHTML = `
+        <div class="rating-section">
+          <div class="rating-section-label">Your Rating</div>
+          <div class="rating-submitted">
+            <span class="stars-display">${stars}</span>
+            <span>${savedRating}.0 / 5.0</span>
+          </div>
+        </div>`;
+    } else {
+      ratingHTML = `
+        <div class="rating-section">
+          <div class="rating-section-label">Rate this ride</div>
+          <div class="star-picker" id="stars-${bidShort}">
+            ${[1,2,3,4,5].map(n => `
+              <button class="star-btn"
+                data-val="${n}"
+                data-bid="${bid}"
+                data-short="${bidShort}"
+                onclick="handleStarClick(this)"
+                onmouseenter="previewStars('${bidShort}', ${n})"
+                onmouseleave="resetStarPreview('${bidShort}')">★</button>
+            `).join('')}
+          </div>
+        </div>`;
+    }
+  }
+
+  return `
+  <div class="ride-card fade-in" style="animation-delay:${idx * 0.07}s" id="card-${bidShort}">
+
+    <!-- collapsed header -->
+    <div class="ride-card-header" onclick="toggleCard('${bidShort}')">
+      <img class="ride-car-thumb" src="${carImg}" alt="${carName}" loading="lazy">
+
+      <div class="ride-header-info">
+        <div class="ride-car-name">${carName}</div>
+        <div class="ride-route-short">${from} → ${to}</div>
+      </div>
+
+      <div class="ride-header-right">
+        <span class="ride-fare">₹${fare.toLocaleString('en-IN')}</span>
+        ${statusBadge(status)}
+        <span class="ride-date-label">${date}</span>
+      </div>
+
+      <span class="ride-chevron">▾</span>
+    </div>
+
+    <!-- expanded body -->
+    <div class="ride-card-body">
+      <div class="ride-card-body-inner">
+
+        <!-- Booking ID -->
+        <div class="booking-id-box" style="margin-top:16px">
+          <span>🎫</span>
+          <div>
+            <div style="font-size:10px;color:var(--text-muted);letter-spacing:0.8px;text-transform:uppercase;margin-bottom:2px">Booking ID</div>
+            <div class="booking-id-num">SR${bidShort}</div>
+          </div>
+          <div style="margin-left:auto">${statusBadge(status)}</div>
+        </div>
+
+        <!-- Car info -->
+        <div class="car-detail-row" style="padding-bottom:20px;border-bottom:1px solid var(--border);margin-bottom:20px">
+          <img class="car-detail-img" src="${carImg}" alt="${carName}" style="width:140px;height:94px">
+          <div class="car-detail-info">
+            <div class="car-detail-name" style="font-size:20px">${carName}</div>
+            <div style="color:var(--text-secondary);font-size:13px;margin-top:2px">${carBrand}${carType ? ' · ' + carType : ''}</div>
+            <div class="car-detail-meta" style="margin-top:10px">
+              ${car.rating  ? `<span class="meta-pill">★ ${car.rating}</span>` : ''}
+              ${car.mileage ? `<span class="meta-pill">⟳ ${car.mileage}</span>` : ''}
+              ${car.seats   ? `<span class="meta-pill">👥 ${car.seats} Seats</span>` : ''}
+            </div>
+          </div>
+        </div>
+
+        <!-- Route -->
+        <div class="route-section">
+          <div class="route-section-label">Route</div>
+          <div class="route-display">
+            <div class="route-point">
+              <div class="route-label">🔵 Pickup</div>
+              <div class="route-value">${from}</div>
+            </div>
+            <div class="route-arrow">→</div>
+            <div class="route-point">
+              <div class="route-label">🔴 Drop</div>
+              <div class="route-value">${to}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Trip grid -->
+        <div class="trip-info-grid">
+          <div class="trip-info-item">
+            <div class="trip-info-icon">📅</div>
+            <div class="trip-info-value">${date}</div>
+            <div class="trip-info-label">Date</div>
+          </div>
+          <div class="trip-info-item">
+            <div class="trip-info-icon">⏰</div>
+            <div class="trip-info-value">${time}</div>
+            <div class="trip-info-label">Time</div>
+          </div>
+          <div class="trip-info-item">
+            <div class="trip-info-icon">📍</div>
+            <div class="trip-info-value">${distKm !== '—' ? distKm + ' km' : '—'}</div>
+            <div class="trip-info-label">Distance</div>
+          </div>
+          <div class="trip-info-item">
+            <div class="trip-info-icon">💸</div>
+            <div class="trip-info-value">₹${fare.toLocaleString('en-IN')}</div>
+            <div class="trip-info-label">Total Fare</div>
+          </div>
+        </div>
+
+        <!-- Rating (completed rides only) -->
+        ${ratingHTML}
+
+        <!-- Driver info (confirmed rides only) -->
+        ${status === 'confirmed' && booking.driver?.name ? `
+        <div class="booking-id-box" style="margin-top:12px">
+          <span>🧑‍✈️</span>
+          <div>
+            <div style="font-size:10px;color:var(--text-muted);letter-spacing:0.8px;text-transform:uppercase;margin-bottom:4px">Assigned Driver</div>
+            <div style="font-weight:700;font-size:14px">${booking.driver.name}</div>
+            <div style="font-size:12px;color:var(--text-secondary);margin-top:2px">
+              📞 ${booking.driver.phone} &nbsp;·&nbsp; 🚗 ${booking.driver.vehicleNumber}
+            </div>
+          </div>
+        </div>` : ''}
+
+        <!-- Cancel (pending / confirmed only) -->
+        ${ ['pending','confirmed'].includes(status)
+          ? `<button class="btn btn-ghost" style="width:100%;justify-content:center;margin-top:12px" onclick="cancelRide('${bid}')">✕ Cancel Ride</button>`
+          : '' }
+
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ═══════════════════════════════════════════════════════
+   CARD ACCORDION
+═══════════════════════════════════════════════════════ */
+function toggleCard(short) {
+  const card = document.getElementById(`card-${short}`);
+  if (!card) return;
+  const wasOpen = card.classList.contains('expanded');
+  // close all
+  document.querySelectorAll('.ride-card.expanded').forEach(c => c.classList.remove('expanded'));
+  // open this one if it was closed
+  if (!wasOpen) card.classList.add('expanded');
+}
+
+/* ═══════════════════════════════════════════════════════
+   STAR INTERACTIONS
+═══════════════════════════════════════════════════════ */
+function getStarBtns(short) {
+  return document.querySelectorAll(`#stars-${short} .star-btn`);
+}
+
+function previewStars(short, hovered) {
+  getStarBtns(short).forEach(b => {
+    b.classList.toggle('active', +b.dataset.val <= hovered);
+  });
+}
+
+function resetStarPreview(short) {
+  getStarBtns(short).forEach(b => b.classList.remove('active'));
+}
+
+function handleStarClick(btn) {
+  const stars = +btn.dataset.val;
+  const bid   = btn.dataset.bid;
+  const short = btn.dataset.short;
+
+  saveRating(bid, stars);
+
+  /* Optional backend call — uncomment when ready:
+  postRating(bid, stars).catch(console.error);
+  */
+
+  showToast(`⭐ Thanks for rating ${stars} star${stars > 1 ? 's' : ''}!`);
+
+  /* Re-render just this card's rating section */
+  const ratingEl = btn.closest('.rating-section');
+  if (ratingEl) {
+    const filledStars = '★'.repeat(stars) + '☆'.repeat(5 - stars);
+    ratingEl.innerHTML = `
+      <div class="rating-section-label">Your Rating</div>
+      <div class="rating-submitted">
+        <span class="stars-display">${filledStars}</span>
+        <span>${stars}.0 / 5.0</span>
+      </div>`;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════
+   FILTER & RENDER LIST
+═══════════════════════════════════════════════════════ */
+let ALL_BOOKINGS = [];
+
+function renderList(filter = 'all') {
+  const list = document.getElementById('ridesList');
+  const countEl = document.getElementById('ridesCount');
+
+  const filtered = filter === 'all'
+    ? ALL_BOOKINGS
+    : ALL_BOOKINGS.filter(b => (b.status || 'pending').toLowerCase() === filter);
+
+  countEl.textContent = `${filtered.length} ride${filtered.length !== 1 ? 's' : ''}`;
+
+  if (filtered.length === 0) {
+    list.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-state-icon">🚗</div>
+        <h2>${filter === 'all' ? 'No rides yet' : 'No ' + filter + ' rides'}</h2>
+        <p>${filter === 'all'
+          ? "You haven't booked any rides yet. Let's change that!"
+          : `You have no ${filter} rides right now.`}</p>
+        <a href="index.html" class="btn btn-primary btn-lg">Book Your First Ride</a>
+      </div>`;
+    return;
+  }
+
+  list.innerHTML = filtered.map((b, i) => rideCardHTML(b, i)).join('');
+}
+
+/* ═══════════════════════════════════════════════════════
+   MOCK DATA — used when API is unreachable (dev mode)
+═══════════════════════════════════════════════════════ */
+function mockBookings() {
+  const now = new Date();
+  const d = (offset) => new Date(now - offset * 86400000).toISOString();
+
+  return [
+    {
+      _id: 'mock001', status: 'completed',
+      from: 'Connaught Place, New Delhi', to: 'IGI Airport T3, Delhi',
+      fare: 842, distanceKm: 18, createdAt: d(1),
+      car: { name: 'BMW 5 Series', brand: 'BMW', type: 'Luxury', price: 28, rating: 4.9, mileage: '18 km/l', seats: 5,
+             img: 'https://images.unsplash.com/photo-1555215695-3004980ad54e?w=600&q=80' }
+    },
+    {
+      _id: 'mock002', status: 'confirmed',
+      from: 'Bandra West, Mumbai', to: 'Chhatrapati Shivaji Airport, Mumbai',
+      fare: 540, distanceKm: 12, createdAt: d(3),
+      car: { name: 'Toyota Camry', brand: 'Toyota', type: 'Sedan', price: 14, rating: 4.6, mileage: '22 km/l', seats: 5,
+             img: 'https://images.unsplash.com/photo-1621007947382-bb3c3994e3fb?w=600&q=80' }
+    },
+    {
+      _id: 'mock003', status: 'pending',
+      from: 'Koramangala, Bengaluru', to: 'Whitefield, Bengaluru',
+      fare: 320, distanceKm: 15, createdAt: d(0),
+      car: { name: 'Maruti Swift', brand: 'Maruti', type: 'Mini', price: 8, rating: 4.3, mileage: '28 km/l', seats: 4,
+             img: 'https://images.unsplash.com/photo-1609521263047-f8f205293f24?w=600&q=80' }
+    },
+    {
+      _id: 'mock004', status: 'rejected',
+      from: 'Sector 18, Noida', to: 'Cyber Hub, Gurugram',
+      fare: 760, distanceKm: 38, createdAt: d(5),
+      car: { name: 'Toyota Fortuner', brand: 'Toyota', type: 'SUV', price: 22, rating: 4.7, mileage: '14 km/l', seats: 7,
+             img: 'https://images.unsplash.com/photo-1544636331-e26879cd4d9b?w=600&q=80' }
+    },
+    {
+      _id: 'mock005', status: 'completed',
+      from: 'Park Street, Kolkata', to: 'Howrah Station, Kolkata',
+      fare: 195, distanceKm: 8, createdAt: d(10),
+      car: { name: 'Hyundai i20', brand: 'Hyundai', type: 'Mini', price: 9, rating: 4.4, mileage: '26 km/l', seats: 5,
+             img: 'https://images.unsplash.com/photo-1580273916550-e323be2ae537?w=600&q=80' }
+    },
+  ];
+}
+
+/* ═══════════════════════════════════════════════════════
+   CANCEL RIDE
+═══════════════════════════════════════════════════════ */
+async function cancelRide(id) {
+  const token = getToken();
+  if (!token) { showToast('🔒 Please log in'); return; }
+
+  try {
+    const res = await fetch(`http://localhost:5000/booking/cancel/${id}`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    const data = await res.json();
+    console.log('[cancelRide]', res.status, data);
+
+    if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+
+    // Update local array — no page reload
+    const ride = ALL_BOOKINGS.find(b => String(b._id || b.id) === String(id));
+    if (ride) ride.status = 'cancelled';
+
+    showToast('✓ Booking cancelled');
+    renderStats(ALL_BOOKINGS);
+    renderList(document.querySelector('.filter-tab.active')?.dataset.filter || 'all');
+
+  } catch (err) {
+    console.error('[cancelRide] failed:', err.message);
+    showToast('❌ ' + err.message);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════════════════ */
+async function init() {
+  /* Update greeting */
+  if (getToken()) {
+    try {
+      document.getElementById('userGreeting').textContent = '👤 ' + getUserEmail().split('@')[0];
+    } catch (_) {}
+  }
+
+  /* Load bookings */
+  try {
+    if (!getToken()) throw new Error('no_token');
+    ALL_BOOKINGS = await fetchMyBookings();
+    console.log('[my-rides] bookings loaded:', ALL_BOOKINGS.length, ALL_BOOKINGS);
+  } catch (err) {
+    if (err.message === 'no_token') {
+      showToast('ℹ️ Showing demo data — log in to see your real rides', 5000);
+    } else {
+      console.warn('[my-rides] fetch failed, using mock:', err.message);
+      showToast('⚠️ Could not reach server — showing demo data', 4000);
+    }
+    ALL_BOOKINGS = mockBookings();
+  }
+
+  /* Always render — clears skeleton regardless of outcome */
+  renderStats(ALL_BOOKINGS);
+  renderList('all');
+
+  /* Inject Cancelled filter tab if missing */
+  const tabsEl = document.getElementById('filterTabs');
+  if (tabsEl && !tabsEl.querySelector('[data-filter="cancelled"]')) {
+    const btn = document.createElement('button');
+    btn.className = 'filter-tab';
+    btn.dataset.filter = 'cancelled';
+    btn.textContent = 'Cancelled';
+    tabsEl.appendChild(btn);
+  }
+
+  /* Filter tabs */
+  document.getElementById('filterTabs').addEventListener('click', e => {
+    const btn = e.target.closest('.filter-tab');
+    if (!btn) return;
+    document.querySelectorAll('.filter-tab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderList(btn.dataset.filter);
+  });
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
